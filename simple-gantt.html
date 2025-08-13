@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Gantt Chart - Manual Entry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .gantt-bar { transition: all 0.3s ease; }
+        .gantt-bar:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-6">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-3xl font-bold text-gray-900">📊 Team Gantt Chart</h1>
+                <button 
+                    onclick="loadManualData()" 
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                    📤 Load Your Data
+                </button>
+            </div>
+            <p class="text-gray-600">Click "Load Your Data" to enter your project information</p>
+        </div>
+
+        <!-- Data Display -->
+        <div id="dataDisplay" class="bg-white rounded-lg shadow-sm p-6">
+            <div class="text-center py-12">
+                <div class="text-6xl mb-4">📋</div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Data Loaded</h3>
+                <p class="text-gray-500">Click "Load Your Data" to get started</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tasks = [];
+        let teamMembers = [];
+
+        function loadManualData() {
+            // Load Tasks
+            const tasksData = prompt(`📋 ENTER YOUR TASKS
+
+Copy your tasks from Google Sheets and paste here.
+Format: Title,Owner,OwnerID,StartDate,EndDate,Summary,Status
+
+Example:
+Q4 Product Launch,Alice Johnson,1,2025-08-15,2025-09-30,Complete marketing campaign,in-progress
+Website Redesign,Bob Smith,2,2025-08-20,2025-10-15,Full website overhaul,planned
+Holiday Campaign,Carol Davis,3,2025-09-01,2025-12-31,Holiday marketing push,planned
+
+Paste your tasks:`);
+
+            if (tasksData && tasksData.trim()) {
+                try {
+                    const taskLines = tasksData.trim().split('\n');
+                    tasks = taskLines.map((line, index) => {
+                        const parts = line.split(',');
+                        return {
+                            id: index + 1,
+                            title: parts[0]?.trim() || 'Untitled Task',
+                            owner: parts[1]?.trim() || 'Unknown',
+                            ownerId: parseInt(parts[2]?.trim()) || 1,
+                            startDate: parts[3]?.trim() || '2025-08-15',
+                            endDate: parts[4]?.trim() || '2025-09-15',
+                            summary: parts[5]?.trim() || 'No description',
+                            status: parts[6]?.trim() || 'planned'
+                        };
+                    });
+
+                    alert(`✅ Successfully loaded ${tasks.length} tasks!`);
+                } catch (error) {
+                    alert('❌ Error parsing tasks. Please check the format.');
+                    return;
+                }
+            }
+
+            // Load Team Members
+            const membersData = prompt(`👥 ENTER YOUR TEAM MEMBERS
+
+Format: ID,Name,PhotoURL,Color
+
+Example:
+1,Alice Johnson,https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150,#3B82F6
+2,Bob Smith,https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150,#10B981
+3,Carol Davis,https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150,#F59E0B
+
+Paste your team data:`);
+
+            if (membersData && membersData.trim()) {
+                try {
+                    const memberLines = membersData.trim().split('\n');
+                    teamMembers = memberLines.map(line => {
+                        const parts = line.split(',');
+                        return {
+                            id: parseInt(parts[0]?.trim()) || 1,
+                            name: parts[1]?.trim() || 'Unknown',
+                            avatar: parts[2]?.trim() || 'https://via.placeholder.com/150',
+                            color: parts[3]?.trim() || '#6B7280'
+                        };
+                    });
+
+                    alert(`✅ Successfully loaded ${teamMembers.length} team members!`);
+                } catch (error) {
+                    alert('❌ Error parsing team members. Please check the format.');
+                    return;
+                }
+            }
+
+            // Display the data
+            displayData();
+        }
+
+        function displayData() {
+            if (tasks.length === 0) {
+                document.getElementById('dataDisplay').innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">📋</div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">No Data Loaded</h3>
+                        <p class="text-gray-500">Click "Load Your Data" to get started</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold mb-4">📊 Your Project Tasks</h2>
+                    
+                    <!-- Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <div class="text-2xl font-bold text-blue-600">${tasks.length}</div>
+                            <div class="text-sm text-blue-700">Total Tasks</div>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600">${tasks.filter(t => t.status === 'completed').length}</div>
+                            <div class="text-sm text-green-700">Completed</div>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <div class="text-2xl font-bold text-yellow-600">${tasks.filter(t => t.status === 'in-progress').length}</div>
+                            <div class="text-sm text-yellow-700">In Progress</div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="text-2xl font-bold text-gray-600">${tasks.filter(t => t.status === 'planned').length}</div>
+                            <div class="text-sm text-gray-700">Planned</div>
+                        </div>
+                    </div>
+
+                    <!-- Team Members -->
+                    ${teamMembers.length > 0 ? `
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-3">👥 Team Members</h3>
+                        <div class="flex gap-3 flex-wrap">
+                            ${teamMembers.map(member => `
+                                <div class="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-full">
+                                    <img src="${member.avatar}" alt="${member.name}" class="w-8 h-8 rounded-full object-cover">
+                                    <span class="font-medium">${member.name}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <!-- Tasks List -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold">📋 Task List</h3>
+                    ${tasks.map(task => {
+                        const member = teamMembers.find(m => m.id === task.ownerId);
+                        const statusColor = task.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                          task.status === 'in-progress' ? 'bg-yellow-100 text-yellow-800' :
+                                          'bg-gray-100 text-gray-800';
+                        
+                        return `
+                            <div class="bg-white border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-lg">${task.title}</h4>
+                                        <p class="text-gray-600 mt-1">${task.summary}</p>
+                                        <div class="flex items-center gap-4 mt-3">
+                                            ${member ? `
+                                            <div class="flex items-center gap-2">
+                                                <img src="${member.avatar}" alt="${member.name}" class="w-6 h-6 rounded-full object-cover">
+                                                <span class="text-sm text-gray-600">${task.owner}</span>
+                                            </div>
+                                            ` : `<span class="text-sm text-gray-600">${task.owner}</span>`}
+                                            <span class="text-sm text-gray-500">${task.startDate} → ${task.endDate}</span>
+                                        </div>
+                                    </div>
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium ${statusColor}">
+                                        ${task.status.replace('-', ' ')}
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+
+                <div class="mt-6 text-center">
+                    <button onclick="loadManualData()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg">
+                        🔄 Update Data
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('dataDisplay').innerHTML = html;
+        }
+
+        // Load sample data on page load for demo
+        window.onload = function() {
+            console.log('Page loaded successfully!');
+        };
+    </script>
+</body>
+</html>
